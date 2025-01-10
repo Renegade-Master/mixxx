@@ -28,6 +28,12 @@ WNumberPos::WNumberPos(const QString& group, QWidget* parent)
     m_pTimeFormat->connectValueChanged(
             this, &WNumberPos::slotSetTimeFormat);
     slotSetTimeFormat(m_pTimeFormat->get());
+
+    m_pShowTrackBarsElapsed = new ControlProxy(
+            "[Controls]", "ShowBarsElapsed", this);
+    m_pShowTrackBarsElapsed->connectValueChanged(
+            this, &WNumberPos::slotSetDisplayMode);
+    slotSetDisplayMode(m_pShowTrackBarsElapsed->get());
 }
 
 void WNumberPos::mousePressEvent(QMouseEvent* pEvent) {

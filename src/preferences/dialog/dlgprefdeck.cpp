@@ -35,9 +35,9 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
           m_pControlTrackTimeFormat(std::make_unique<ControlObject>(
           ConfigKey("[Controls]", "TimeFormat"))),
           m_pControlTrackBarsDisplay(std::make_unique<ControlObject>(
-          ConfigKey("[Controls]", "ShowDurationRemaining"))),
+          ConfigKey("[Controls]", "ShowBarsElapsed"))),
           m_pControlTrackBarsFormat(std::make_unique<ControlObject>(
-          ConfigKey("[Controls]", "TimeFormat"))),
+          ConfigKey("[Controls]", "BarsFormat"))),
           m_pNumDecks(make_parented<ControlProxy>(
                   kAppGroup, QStringLiteral("num_decks"), this)),
           m_pNumSamplers(make_parented<ControlProxy>(
@@ -114,6 +114,7 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
             this,
             &DlgPrefDeck::slotTimeFormatChanged);
 
+    // Configure bars display
     double positionDisplayBarsType = m_pConfig->getValue(
             ConfigKey("[Controls]", "PositionDisplayBars"),
             static_cast<double>(TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING));
@@ -139,7 +140,7 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
                     &DlgPrefDeck::slotSetTrackBarsDisplay));
 
     // Track bar display configuration
-    connect(m_pControlTrackBarsDisplay.get(),
+    connect(m_pControlTrackBarsFormat.get(),
             &ControlObject::valueChanged,
             this,
             QOverload<double>::of(&DlgPrefDeck::slotSetTrackBarsDisplay));
@@ -464,6 +465,8 @@ void DlgPrefDeck::slotUpdate() {
 
     slotSetTrackTimeDisplay(m_pControlTrackTimeDisplay->get());
 
+    slotSetTrackBarsDisplay(m_pControlTrackBarsDisplay->get());
+
     checkBoxCloneDeckOnLoadDoubleTap->setChecked(m_pConfig->getValue(
             ConfigKey("[Controls]", "CloneDeckOnLoadDoubleTap"), true));
 
@@ -543,6 +546,9 @@ void DlgPrefDeck::slotUpdate() {
 void DlgPrefDeck::slotResetToDefaults() {
     // Track time display mode
     radioButtonTimeRemaining->setChecked(true);
+
+    // Track bars display mode
+    radioButtonBarsElapsed->setChecked(true);
 
     // Up increases speed.
     checkBoxInvertSpeedSlider->setChecked(false);
@@ -656,7 +662,7 @@ void DlgPrefDeck::slotSetTrackTimeDisplay(QAbstractButton* b) {
 
 void DlgPrefDeck::slotSetTrackTimeDisplay(double v) {
     m_timeDisplayMode = static_cast<TrackTime::TimeDisplayMode>(static_cast<int>(v));
-    m_pConfig->set(ConfigKey("[Controls]","PositionDisplay"), ConfigValue(v));
+    m_pConfig->set(ConfigKey("[Controls]","PositionDisplayTime"), ConfigValue(v));
     if (m_timeDisplayMode == TrackTime::TimeDisplayMode::REMAINING) {
         radioButtonTimeRemaining->setChecked(true);
     } else if (m_timeDisplayMode == TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING) {
@@ -678,7 +684,7 @@ void DlgPrefDeck::slotSetTrackBarsDisplay(QAbstractButton* b) {
 
 void DlgPrefDeck::slotSetTrackBarsDisplay(double v) {
     m_barsDisplayMode = static_cast<TrackTime::BarsDisplayMode>(static_cast<int>(v));
-    m_pConfig->set(ConfigKey("[Controls]","PositionDisplay"), ConfigValue(v));
+    m_pConfig->set(ConfigKey("[Controls]","PositionDisplayBars"), ConfigValue(v));
     if (m_barsDisplayMode == TrackTime::BarsDisplayMode::REMAINING) {
         radioButtonTimeRemaining->setChecked(true);
     } else if (m_barsDisplayMode == TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING) {
@@ -738,13 +744,18 @@ void DlgPrefDeck::slotApply() {
             ConfigValue(m_bSetIntroStartAtMainCue));
 
     double timeDisplay = static_cast<double>(m_timeDisplayMode);
-    m_pConfig->set(ConfigKey("[Controls]","PositionDisplay"), ConfigValue(timeDisplay));
+    m_pConfig->set(ConfigKey("[Controls]","PositionDisplayTime"), ConfigValue(timeDisplay));
     m_pControlTrackTimeDisplay->set(timeDisplay);
 
     // time format
     double timeFormat = comboBoxTimeFormat->itemData(comboBoxTimeFormat->currentIndex()).toDouble();
     m_pControlTrackTimeFormat->set(timeFormat);
     m_pConfig->setValue(ConfigKey("[Controls]", "TimeFormat"), timeFormat);
+
+    // Bars display
+    double barsDisplay = static_cast<double>(m_barsDisplayMode);
+    m_pConfig->set(ConfigKey("[Controls]","PositionDisplayBars"), ConfigValue(barsDisplay));
+    m_pControlTrackBarsDisplay->set(barsDisplay);
 
     // Set cue mode for every deck
     for (ControlProxy* pControl : std::as_const(m_cueControls)) {

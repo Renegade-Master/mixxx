@@ -32,4 +32,8 @@ class WNumberPos : public WNumber {
     ControlProxy* m_pTimeRemaining;
     ControlProxy* m_pShowTrackTimeRemaining;
     ControlProxy* m_pTimeFormat;
+
+    ControlProxy* m_pBarsElapsed;
+    ControlProxy* m_pBarsRemaining;
+    ControlProxy* m_pShowTrackBarsElapsed;
 };
