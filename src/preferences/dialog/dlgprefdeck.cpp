@@ -33,7 +33,11 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
           m_pControlTrackTimeDisplay(std::make_unique<ControlObject>(
                   ConfigKey("[Controls]", "ShowDurationRemaining"))),
           m_pControlTrackTimeFormat(std::make_unique<ControlObject>(
-                  ConfigKey("[Controls]", "TimeFormat"))),
+          ConfigKey("[Controls]", "TimeFormat"))),
+          m_pControlTrackBarsDisplay(std::make_unique<ControlObject>(
+          ConfigKey("[Controls]", "ShowDurationRemaining"))),
+          m_pControlTrackBarsFormat(std::make_unique<ControlObject>(
+          ConfigKey("[Controls]", "TimeFormat"))),
           m_pNumDecks(make_parented<ControlProxy>(
                   kAppGroup, QStringLiteral("num_decks"), this)),
           m_pNumSamplers(make_parented<ControlProxy>(
@@ -80,29 +84,29 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
             this,
             QOverload<double>::of(&DlgPrefDeck::slotSetTrackTimeDisplay));
 
-    double positionDisplayType = m_pConfig->getValue(
-            ConfigKey("[Controls]", "PositionDisplay"),
-            static_cast<double>(TrackTime::DisplayMode::ELAPSED_AND_REMAINING));
-    if (positionDisplayType ==
-            static_cast<double>(TrackTime::DisplayMode::REMAINING)) {
-        radioButtonRemaining->setChecked(true);
+    double positionDisplayTimeType = m_pConfig->getValue(
+            ConfigKey("[Controls]", "PositionDisplayTime"),
+            static_cast<double>(TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING));
+    if (positionDisplayTimeType ==
+            static_cast<double>(TrackTime::TimeDisplayMode::REMAINING)) {
+        radioButtonTimeRemaining->setChecked(true);
         m_pControlTrackTimeDisplay->set(
-            static_cast<double>(TrackTime::DisplayMode::REMAINING));
-    } else if (positionDisplayType ==
-                   static_cast<double>(TrackTime::DisplayMode::ELAPSED_AND_REMAINING)) {
-        radioButtonElapsedAndRemaining->setChecked(true);
+            static_cast<double>(TrackTime::TimeDisplayMode::REMAINING));
+    } else if (positionDisplayTimeType ==
+                   static_cast<double>(TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING)) {
+        radioButtonTimeElapsedAndRemaining->setChecked(true);
         m_pControlTrackTimeDisplay->set(
-            static_cast<double>(TrackTime::DisplayMode::ELAPSED_AND_REMAINING));
+            static_cast<double>(TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING));
     } else {
-        radioButtonElapsed->setChecked(true);
+        radioButtonTimeElapsed->setChecked(true);
         m_pControlTrackTimeDisplay->set(
-            static_cast<double>(TrackTime::DisplayMode::ELAPSED));
+            static_cast<double>(TrackTime::TimeDisplayMode::ELAPSED));
     }
     connect(buttonGroupTrackTime,
             QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked),
             this,
             QOverload<QAbstractButton*>::of(
-                    &DlgPrefDeck::slotSetTrackTimeDisplay));
+            &DlgPrefDeck::slotSetTrackTimeDisplay));
 
     // display time format
     connect(m_pControlTrackTimeFormat.get(),
@@ -110,38 +114,68 @@ DlgPrefDeck::DlgPrefDeck(QWidget* parent, UserSettingsPointer pConfig)
             this,
             &DlgPrefDeck::slotTimeFormatChanged);
 
+    double positionDisplayBarsType = m_pConfig->getValue(
+            ConfigKey("[Controls]", "PositionDisplayBars"),
+            static_cast<double>(TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING));
+    if (positionDisplayBarsType ==
+            static_cast<double>(TrackTime::BarsDisplayMode::REMAINING)) {
+        radioButtonBarsRemaining->setChecked(true);
+        m_pControlTrackBarsDisplay->set(
+            static_cast<double>(TrackTime::BarsDisplayMode::REMAINING));
+    } else if (positionDisplayBarsType ==
+                   static_cast<double>(TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING)) {
+        radioButtonBarsElapsedAndRemaining->setChecked(true);
+        m_pControlTrackBarsDisplay->set(
+            static_cast<double>(TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING));
+    } else {
+        radioButtonBarsElapsed->setChecked(true);
+        m_pControlTrackBarsDisplay->set(
+            static_cast<double>(TrackTime::BarsDisplayMode::ELAPSED));
+    }
+    connect(buttonGroupTrackBars,
+            QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked),
+            this,
+            QOverload<QAbstractButton*>::of(
+                    &DlgPrefDeck::slotSetTrackBarsDisplay));
+
+    // Track bar display configuration
+    connect(m_pControlTrackBarsDisplay.get(),
+            &ControlObject::valueChanged,
+            this,
+            QOverload<double>::of(&DlgPrefDeck::slotSetTrackBarsDisplay));
+
     // Track Display model
     comboBoxTimeFormat->clear();
 
     comboBoxTimeFormat->addItem(tr("mm:ss%1zz - Traditional")
                                 .arg(mixxx::DurationBase::kDecimalSeparator),
                                 static_cast<int>
-                                (TrackTime::DisplayFormat::TRADITIONAL));
+                                (TrackTime::TimeDisplayFormat::TRADITIONAL));
 
     comboBoxTimeFormat->addItem(tr("mm:ss - Traditional (Coarse)"),
                                 static_cast<int>
-                                (TrackTime::DisplayFormat::TRADITIONAL_COARSE));
+                                (TrackTime::TimeDisplayFormat::TRADITIONAL_COARSE));
 
     comboBoxTimeFormat->addItem(tr("s%1zz - Seconds")
                                 .arg(mixxx::DurationBase::kDecimalSeparator),
                                 static_cast<int>
-                                (TrackTime::DisplayFormat::SECONDS));
+                                (TrackTime::TimeDisplayFormat::SECONDS));
 
     comboBoxTimeFormat->addItem(tr("sss%1zz - Seconds (Long)")
                                 .arg(mixxx::DurationBase::kDecimalSeparator),
                                 static_cast<int>
-                                (TrackTime::DisplayFormat::SECONDS_LONG));
+                                (TrackTime::TimeDisplayFormat::SECONDS_LONG));
 
     comboBoxTimeFormat->addItem(tr("s%1sss%2zz - Kiloseconds")
                                 .arg(QString(mixxx::DurationBase::kDecimalSeparator),
                                      QString(mixxx::DurationBase::kKiloGroupSeparator)),
                                 static_cast<int>
-                                (TrackTime::DisplayFormat::KILO_SECONDS));
+                                (TrackTime::TimeDisplayFormat::KILO_SECONDS));
 
     double time_format = static_cast<double>(
                                             m_pConfig->getValue(
                                             ConfigKey("[Controls]", "TimeFormat"),
-                                            static_cast<int>(TrackTime::DisplayFormat::TRADITIONAL)));
+                                            static_cast<int>(TrackTime::TimeDisplayFormat::TRADITIONAL)));
     m_pControlTrackTimeFormat->set(time_format);
     comboBoxTimeFormat->setCurrentIndex(
                 comboBoxTimeFormat->findData(time_format));
@@ -508,7 +542,7 @@ void DlgPrefDeck::slotUpdate() {
 
 void DlgPrefDeck::slotResetToDefaults() {
     // Track time display mode
-    radioButtonRemaining->setChecked(true);
+    radioButtonTimeRemaining->setChecked(true);
 
     // Up increases speed.
     checkBoxInvertSpeedSlider->setChecked(false);
@@ -611,24 +645,46 @@ void DlgPrefDeck::slotCloneDeckOnLoadDoubleTapCheckbox(bool checked) {
 }
 
 void DlgPrefDeck::slotSetTrackTimeDisplay(QAbstractButton* b) {
-    if (b == radioButtonRemaining) {
-        m_timeDisplayMode = TrackTime::DisplayMode::REMAINING;
-    } else if (b == radioButtonElapsedAndRemaining) {
-        m_timeDisplayMode = TrackTime::DisplayMode::ELAPSED_AND_REMAINING;
+    if (b == radioButtonTimeRemaining) {
+        m_timeDisplayMode = TrackTime::TimeDisplayMode::REMAINING;
+    } else if (b == radioButtonTimeElapsedAndRemaining) {
+        m_timeDisplayMode = TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING;
     } else {
-        m_timeDisplayMode = TrackTime::DisplayMode::ELAPSED;
+        m_timeDisplayMode = TrackTime::TimeDisplayMode::ELAPSED;
     }
 }
 
 void DlgPrefDeck::slotSetTrackTimeDisplay(double v) {
-    m_timeDisplayMode = static_cast<TrackTime::DisplayMode>(static_cast<int>(v));
+    m_timeDisplayMode = static_cast<TrackTime::TimeDisplayMode>(static_cast<int>(v));
     m_pConfig->set(ConfigKey("[Controls]","PositionDisplay"), ConfigValue(v));
-    if (m_timeDisplayMode == TrackTime::DisplayMode::REMAINING) {
-        radioButtonRemaining->setChecked(true);
-    } else if (m_timeDisplayMode == TrackTime::DisplayMode::ELAPSED_AND_REMAINING) {
-        radioButtonElapsedAndRemaining->setChecked(true);
+    if (m_timeDisplayMode == TrackTime::TimeDisplayMode::REMAINING) {
+        radioButtonTimeRemaining->setChecked(true);
+    } else if (m_timeDisplayMode == TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING) {
+        radioButtonTimeElapsedAndRemaining->setChecked(true);
     } else { // Elapsed
-        radioButtonElapsed->setChecked(true);
+        radioButtonTimeElapsed->setChecked(true);
+    }
+}
+
+void DlgPrefDeck::slotSetTrackBarsDisplay(QAbstractButton* b) {
+    if (b == radioButtonBarsRemaining) {
+        m_barsDisplayMode = TrackTime::BarsDisplayMode::REMAINING;
+    } else if (b == radioButtonBarsElapsedAndRemaining) {
+        m_barsDisplayMode = TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING;
+    } else {
+        m_barsDisplayMode = TrackTime::BarsDisplayMode::ELAPSED;
+    }
+}
+
+void DlgPrefDeck::slotSetTrackBarsDisplay(double v) {
+    m_barsDisplayMode = static_cast<TrackTime::BarsDisplayMode>(static_cast<int>(v));
+    m_pConfig->set(ConfigKey("[Controls]","PositionDisplay"), ConfigValue(v));
+    if (m_barsDisplayMode == TrackTime::BarsDisplayMode::REMAINING) {
+        radioButtonTimeRemaining->setChecked(true);
+    } else if (m_barsDisplayMode == TrackTime::BarsDisplayMode::ELAPSED_AND_REMAINING) {
+        radioButtonTimeElapsedAndRemaining->setChecked(true);
+    } else { // Elapsed
+        radioButtonTimeElapsed->setChecked(true);
     }
 }
 

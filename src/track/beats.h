@@ -21,7 +21,7 @@ namespace mixxx {
 class Beats;
 typedef std::shared_ptr<const Beats> BeatsPointer;
 
-/// A beat marker is denotes the border of a tempo section inside a track.
+/// A beat marker denotes the border of a tempo section inside a track.
 class BeatMarker {
   public:
     BeatMarker(mixxx::audio::FramePos position, int beatsTillNextMarker)

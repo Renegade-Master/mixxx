@@ -18,13 +18,19 @@ constexpr bool kDefaultCloneDeckOnLoad = true;
 }
 
 namespace TrackTime {
-    enum class DisplayMode {
+    enum class TimeDisplayMode {
         ELAPSED,
         REMAINING,
         ELAPSED_AND_REMAINING,
     };
 
-    enum class DisplayFormat {
+    enum class BarsDisplayMode {
+        ELAPSED,
+        REMAINING,
+        ELAPSED_AND_REMAINING,
+    };
+
+    enum class TimeDisplayFormat {
         TRADITIONAL,
         TRADITIONAL_COARSE,
         SECONDS,
@@ -80,6 +86,8 @@ class DlgPrefDeck : public DlgPreferencePage, public Ui::DlgPrefDeckDlg  {
     void slotRatePermFineSpinbox(double);
     void slotSetTrackTimeDisplay(QAbstractButton*);
     void slotSetTrackTimeDisplay(double);
+    void slotSetTrackBarsDisplay(QAbstractButton*);
+    void slotSetTrackBarsDisplay(double);
     void slotCueModeCombobox(int);
     void slotSetTrackLoadMode(int comboboxIndex);
     void slotLoadWhenDeckPlayingIndexChanged(int comboboxIndex);
@@ -110,6 +118,9 @@ class DlgPrefDeck : public DlgPreferencePage, public Ui::DlgPrefDeckDlg  {
     const std::unique_ptr<ControlObject> m_pControlTrackTimeDisplay;
     const std::unique_ptr<ControlObject> m_pControlTrackTimeFormat;
 
+    const std::unique_ptr<ControlObject> m_pControlTrackBarsDisplay;
+    const std::unique_ptr<ControlObject> m_pControlTrackBarsFormat;
+
     const parented_ptr<ControlProxy> m_pNumDecks;
     const parented_ptr<ControlProxy> m_pNumSamplers;
 
@@ -123,7 +134,8 @@ class DlgPrefDeck : public DlgPreferencePage, public Ui::DlgPrefDeckDlg  {
     int m_iNumConfiguredDecks;
     int m_iNumConfiguredSamplers;
 
-    TrackTime::DisplayMode m_timeDisplayMode;
+    TrackTime::TimeDisplayMode m_timeDisplayMode;
+    TrackTime::BarsDisplayMode m_barsDisplayMode;
 
     CueMode m_cueMode;
 

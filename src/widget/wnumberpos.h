@@ -24,8 +24,8 @@ class WNumberPos : public WNumber {
 
   private:
 
-    TrackTime::DisplayMode m_displayMode;
-    TrackTime::DisplayFormat m_displayFormat;
+    TrackTime::TimeDisplayMode m_displayMode;
+    TrackTime::TimeDisplayFormat m_displayFormat;
 
     double m_dOldTimeElapsed;
     ControlProxy* m_pTimeElapsed;

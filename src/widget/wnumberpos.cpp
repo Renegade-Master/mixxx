@@ -8,7 +8,7 @@
 
 WNumberPos::WNumberPos(const QString& group, QWidget* parent)
         : WNumber(parent),
-          m_displayFormat(TrackTime::DisplayFormat::TRADITIONAL),
+          m_displayFormat(TrackTime::TimeDisplayFormat::TRADITIONAL),
           m_dOldTimeElapsed(0.0) {
     m_pTimeElapsed = new ControlProxy(group, "time_elapsed", this, ControlFlag::NoAssertIfMissing);
     m_pTimeElapsed->connectValueChanged(this, &WNumberPos::slotSetTimeElapsed);
@@ -35,12 +35,12 @@ void WNumberPos::mousePressEvent(QMouseEvent* pEvent) {
 
     if (leftClick) {
         // Cycle through display modes
-        if (m_displayMode == TrackTime::DisplayMode::ELAPSED) {
-            m_displayMode = TrackTime::DisplayMode::REMAINING;
-        } else if (m_displayMode == TrackTime::DisplayMode::REMAINING) {
-            m_displayMode = TrackTime::DisplayMode::ELAPSED_AND_REMAINING;
-        } else if (m_displayMode == TrackTime::DisplayMode::ELAPSED_AND_REMAINING) {
-            m_displayMode = TrackTime::DisplayMode::ELAPSED;
+        if (m_displayMode == TrackTime::TimeDisplayMode::ELAPSED) {
+            m_displayMode = TrackTime::TimeDisplayMode::REMAINING;
+        } else if (m_displayMode == TrackTime::TimeDisplayMode::REMAINING) {
+            m_displayMode = TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING;
+        } else if (m_displayMode == TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING) {
+            m_displayMode = TrackTime::TimeDisplayMode::ELAPSED;
         }
 
         m_pShowTrackTimeRemaining->set(static_cast<double>(m_displayMode));
@@ -60,32 +60,32 @@ void WNumberPos::slotSetTimeElapsed(double dTimeElapsed) {
     double dTimeRemaining = m_pTimeRemaining->get();
     QString (*timeFormat)(double dSeconds, mixxx::Duration::Precision precision);
 
-    if (m_displayFormat == TrackTime::DisplayFormat::KILO_SECONDS) {
+    if (m_displayFormat == TrackTime::TimeDisplayFormat::KILO_SECONDS) {
         timeFormat = &mixxx::Duration::formatKiloSeconds;
-    } else if (m_displayFormat == TrackTime::DisplayFormat::SECONDS_LONG) {
+    } else if (m_displayFormat == TrackTime::TimeDisplayFormat::SECONDS_LONG) {
         timeFormat = &mixxx::Duration::formatSecondsLong;
-    } else if (m_displayFormat == TrackTime::DisplayFormat::SECONDS) {
+    } else if (m_displayFormat == TrackTime::TimeDisplayFormat::SECONDS) {
        timeFormat = &mixxx::Duration::formatSeconds;
     } else {
         timeFormat = &mixxx::Duration::formatTime;
     }
 
     mixxx::Duration::Precision precision;
-    if (m_displayFormat != TrackTime::DisplayFormat::TRADITIONAL_COARSE) {
+    if (m_displayFormat != TrackTime::TimeDisplayFormat::TRADITIONAL_COARSE) {
         precision = mixxx::Duration::Precision::CENTISECONDS;
     } else {
         precision = mixxx::Duration::Precision::SECONDS;
     }
 
-    if (m_displayMode == TrackTime::DisplayMode::ELAPSED) {
+    if (m_displayMode == TrackTime::TimeDisplayMode::ELAPSED) {
         if (dTimeElapsed >= 0.0) {
             setText(timeFormat(dTimeElapsed, precision));
         } else {
             setText(QLatin1String("-") % timeFormat(-dTimeElapsed, precision));
         }
-    } else if (m_displayMode == TrackTime::DisplayMode::REMAINING) {
+    } else if (m_displayMode == TrackTime::TimeDisplayMode::REMAINING) {
         setText(QLatin1String("-") % timeFormat(dTimeRemaining, precision));
-    } else if (m_displayMode == TrackTime::DisplayMode::ELAPSED_AND_REMAINING) {
+    } else if (m_displayMode == TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING) {
         if (dTimeElapsed >= 0.0) {
             setText(timeFormat(dTimeElapsed, precision)
                     % QLatin1String("  -") % timeFormat(dTimeRemaining, precision));
@@ -110,17 +110,18 @@ void WNumberPos::slotTimeRemainingUpdated(double dTimeRemaining) {
 
 void WNumberPos::slotSetDisplayMode(double remain) {
     if (remain == 1.0) {
-        m_displayMode = TrackTime::DisplayMode::REMAINING;
+        m_displayMode = TrackTime::TimeDisplayMode::REMAINING;
     } else if (remain == 2.0) {
-        m_displayMode = TrackTime::DisplayMode::ELAPSED_AND_REMAINING;
+        m_displayMode = TrackTime::TimeDisplayMode::ELAPSED_AND_REMAINING;
     } else {
-        m_displayMode = TrackTime::DisplayMode::ELAPSED;
+        m_displayMode = TrackTime::TimeDisplayMode::ELAPSED;
     }
 
     slotSetTimeElapsed(m_dOldTimeElapsed);
 }
+
 void WNumberPos::slotSetTimeFormat(double v) {
-    m_displayFormat = static_cast<TrackTime::DisplayFormat>(static_cast<int>(v));
+    m_displayFormat = static_cast<TrackTime::TimeDisplayFormat>(static_cast<int>(v));
 
     slotSetTimeElapsed(m_dOldTimeElapsed);
 }
